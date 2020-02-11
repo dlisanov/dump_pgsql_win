@@ -20,13 +20,14 @@ foreach ($name_bd in $name_bd_list) {
     # Проверяем имя БД с системными БД
     if (-not ($config.psql_srv.system_bd -match $name_bd)) {
         # Получаем имя файла архивной копии
-        $name_bd_file="$path_backup$date_$name_bd.sql"
+        $name_bd_file=$path_backup+$date+"_"+$name_bd+".sql"
         # Дамп БД
         .\pg_dump.exe -Fc -b -f $name_bd_file $name_bd
         # Проверяем необходимость сжатия дампа
         if ($config.compress_zip) {
+            $PSVersionTable.PSVersion.MajorRevision
             #Получаем имя сжатого дампа БД
-            $zip_name_bd_file="$name_bd_file.zip"
+            $zip_name_bd_file=$name_bd_file+".zip"
             # Сжимаем дамп
             Compress-Archive -Path $name_bd_file -DestinationPath $zip_name_bd_file -CompressionLevel Optimal
             # Удаляем не сжатый дамп
