@@ -4,7 +4,7 @@
 $date = Get-Date -format "yyyy-MM-dd"
 $config = Get-Content config.json | ConvertFrom-Json
 $temp_bd_list = $config.path_backup+$date+"temp_bd_list.txt"
-# Устанавливаем переменную окружения с паролем пользователя
+# Устанавливаем переменную окружения с данными для подключения
 $env:PGHOST = $config.psql_srv.ip
 $env:PGPORT = $config.psql_srv.port
 $env:PGUSER = $config.psql_srv.user
@@ -38,5 +38,5 @@ foreach ($name_bd in $name_bd_list) {
 # Удаляем дампы страрше $lifetime_backup
 # Вычисляем дату после которой будем удалять файлы.
 $CurrentDay = Get-Date
-$ChDaysDel = $CurrentDay.AddDays($lifetime_backup)
-GCI -Path $path_backup-Recurse | Where-Object {$_.CreationTime -LT $ChDaysDel} | RI -Recurse -Force
+$ChDaysDel = $CurrentDay.AddDays($config.lifetime)
+Get-ChildItem -Path $path_backup-Recurse | Where-Object { $_.CreationTime -LT $ChDaysDel } | Remove-Item -Recurse -Force

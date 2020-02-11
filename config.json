@@ -11,6 +11,6 @@
             "template0"]
     },
     "path_backup" : "",
-    "lifetime" : -5,
+    "lifetime" : "-5",
     "compress_zip" : true
 }
