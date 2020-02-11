@@ -49,6 +49,6 @@ foreach ($name_bd in $name_bd_list) {
 }
 # Удаляем дампы страрше $lifetime_backup
 # Вычисляем дату после которой будем удалять файлы.
-#$CurrentDay = Get-Date
-#$ChDaysDel = $CurrentDay.AddDays($lifetime_backup)
-#GCI -Path $path_backup-Recurse | Where-Object {$_.CreationTime -LT $ChDaysDel} | RI -Recurse -Force
+$CurrentDay = Get-Date
+$ChDaysDel = $CurrentDay.AddDays($lifetime_backup)
+GCI -Path $path_backup-Recurse | Where-Object {$_.CreationTime -LT $ChDaysDel} | RI -Recurse -Force
