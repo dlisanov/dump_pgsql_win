@@ -1,1 +1,16 @@
-{}
+{
+    "version" : "1",
+    "psql_srv"  : {
+        "ip" : "192.168.0.20",
+        "port" : "5432",
+        "user" : "postgres",
+        "password" : "Password1",
+        "path_bin" : "d:\\progremmers\\PosqtgreSQL\\App\\PgSQL\\bin\\",
+        "system_bd" : ["postgres",
+            "template1",
+            "template0"]
+    },
+    "path_backup" : "",
+    "lifetime" : -5,
+    "compress_zip" : true
+}
