@@ -1,55 +1,55 @@
-# РЎРєСЂРёРїС‚ СЃРѕР·РґР°РЅРёСЏ Р±СЌРєР°РїРѕРІ PostgreSQl
-# РјРёРЅРёРјР°Р»СЊРЅР°СЏ РІРµСЂСЃРёСЏ PowerShell 5.1. РЎ РІРµСЂСЃРёРµР№ РЅРёР¶Рµ РІСЃС‚СЂРѕРµРЅРЅР°СЏ Р°СЂС…РёРІР°С†РёСЏ РЅРµ СЂР°Р±РѕС‚Р°РµС‚
+# Скрипт создания бэкапов PostgreSQl
+# минимальная версия PowerShell 5.1. С версией ниже встроенная архивация не работает
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Start script"
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Initilizacion variable"
-# РўРµРєСѓС‰Р°СЏ РґР°С‚Р°
+# Текущая дата
 $date = Get-Date -format "yyyy-MM-dd"
 $config = Get-Content $PSScriptRoot\config.json | ConvertFrom-Json
 $temp_bd_list = $config.path_backup+"temp_bd_list.txt"
-# РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј РїРµСЂРµРјРµРЅРЅСѓСЋ РѕРєСЂСѓР¶РµРЅРёСЏ СЃ РґР°РЅРЅС‹РјРё РґР»СЏ РїРѕРґРєР»СЋС‡РµРЅРёСЏ Рє PostgreSQL
+# Устанавливаем переменную окружения с данными для подключения к PostgreSQL
 $env:PGHOST = $config.psql_srv.ip
 $env:PGPORT = $config.psql_srv.port
 $env:PGUSER = $config.psql_srv.user
 $env:PGPASSWORD = $config.psql_srv.password
-# РЈСЃС‚Р°РЅР°РІР»РёРІР°РµРј СЂР°Р±РѕС‡РёР№ РєР°С‚Р°Р»РѕРі СЃ СЃРёРїРѕР»РЅСЏРµРјС‹РјРё С„Р°Р№Р»Р°РјРё PostgreSQL
+# Устанавливаем рабочий каталог с сиполняемыми файлами PostgreSQL
 Set-Location $config.psql_srv.path_bin
-# РџРѕР»СѓС‡Р°РµРј СЃРїРёСЃРѕРє Р‘Р” СЃРµСЂРІРµСЂР° PostgreSQL
+# Получаем список БД сервера PostgreSQL
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Get list DB in $temp_bd_list"
 .\psql.exe -A -q -t -c "select datname from pg_database" > $temp_bd_list
 $name_bd_list = get-content $temp_bd_list
-# РЈРґР°Р»СЏРµРј РІСЂРµРјРµРЅРЅС‹Р№ С„Р°Р№Р»
+# Удаляем временный файл
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Remove temp file list bd"
 Remove-Item $temp_bd_list -Recurse -Force
 foreach ($name_bd in $name_bd_list) {
-    # РџСЂРѕРІРµСЂСЏРµРј РёРјСЏ Р‘Р” СЃ СЃРёСЃС‚РµРјРЅС‹РјРё Р‘Р”
+    # Проверяем имя БД с системными БД
     if (-not ($config.psql_srv.system_bd -match $name_bd)) {
-        # РџРѕР»СѓС‡Р°РµРј РёРјСЏ С„Р°Р№Р»Р° Р°СЂС…РёРІРЅРѕР№ РєРѕРїРёРё
+        # Получаем имя файла архивной копии
         $name_bd_file=$config.path_backup+$date+"_"+$name_bd+".sql"
-        # Р”Р°РјРї Р‘Р”
+        # Дамп БД
         Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Dump $name_bd in $name_bd_file"
         .\pg_dump.exe -Fc -b -f $name_bd_file $name_bd       
     }
 }
-# РџСЂРѕРІРµСЂСЏРµРј РЅРµРѕР±С…РѕРґРёРјРѕСЃС‚СЊ СЃР¶Р°С‚РёСЏ РґР°РјРїР° 
+# Проверяем необходимость сжатия дампа 
 if ($config.compress_zip) {
     Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Start create zip arhive"
-    # РџРѕР»СѓС‡Р°РµРј СЃРїРёСЃРєРѕ С„Р°Р№Р»РѕРІ РґР»СЏ Р°СЂС…РёРІР°С†РёРё
+    # Получаем списко файлов для архивации
     $list_file_sql = [IO.Directory]::EnumerateFiles($config.path_backup,'*.sql')
     foreach ($file_sql in $list_file_sql) {
-        # РџРѕР»СѓС‡Р°РµРј РїРѕР»РЅРѕРµ РїРѕР»РЅС‹Р№ РїСѓС‚СЊ Рё РёРјСЏ С„Р°Р№Р»Р° SQL
+        # Получаем полное полный путь и имя файла SQL
         $full_file_sql = $config.$path_backup+$file_sql
-        # РџРѕР»СѓС‡Р°РµРј РёРјСЏ СЃР¶Р°С‚РѕРіРѕ РґР°РјРїР° Р‘Р”
+        # Получаем имя сжатого дампа БД
         $zip_name_bd_file=$full_file_sql+".zip"
         Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Greate arhive $full_file_sql in $zip_name_bd_file"
-        # РЎР¶РёРјР°РµРј РґР°РјРї
+        # Сжимаем дамп
         Compress-Archive -Path $full_file_sql -DestinationPath $zip_name_bd_file -CompressionLevel Optimal
-        # РЈРґР°Р»СЏРµРј РЅРµ СЃР¶Р°С‚С‹Р№ РґР°РјРї
+        # Удаляем не сжатый дамп
         Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Delete file $full_file_sql"
         Remove-Item $full_file_sql -Recurse -Force
     }
 }
-# РЈРґР°Р»СЏРµРј РґР°РјРїС‹ СЃС‚СЂР°СЂС€Рµ $lifetime_backup
-# Р’С‹С‡РёСЃР»СЏРµРј РґР°С‚Сѓ РїРѕСЃР»Рµ РєРѕС‚РѕСЂРѕР№ Р±СѓРґРµРј СѓРґР°Р»СЏС‚СЊ С„Р°Р№Р»С‹.
+# Удаляем дампы страрше $lifetime_backup
+# Вычисляем дату после которой будем удалять файлы.
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Delete old file"
 $CurrentDay = Get-Date
 $ChDaysDel = $CurrentDay.AddDays($config.lifetime)
