@@ -4,7 +4,7 @@ Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Start script"
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Initilizacion variable"
 # Текущая дата
 $date = Get-Date -format "yyyy-MM-dd"
-$config = Get-Content config.json | ConvertFrom-Json
+$config = Get-Content $PSScriptRoot\config.json | ConvertFrom-Json
 $temp_bd_list = $config.path_backup+"temp_bd_list.txt"
 # Устанавливаем переменную окружения с данными для подключения к PostgreSQL
 $env:PGHOST = $config.psql_srv.ip
