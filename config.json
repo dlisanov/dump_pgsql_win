@@ -6,11 +6,9 @@
         "user" : "postgres",
         "password" : "Password1",
         "path_bin" : "d:\\progremmers\\PosqtgreSQL\\App\\PgSQL\\bin\\",
-        "system_bd" : ["postgres",
-            "template1",
-            "template0"]
+        "system_bd" : ["postgres", "template1", "template0"]
     },
-    "path_backup" : "",
+    "path_backup" : "D:\\1c_backup\\",
     "lifetime" : "-5",
     "compress_zip" : true
 }
