@@ -10,5 +10,13 @@
     },
     "path_backup" : "D:\\1c_backup\\",
     "lifetime" : "-5",
-    "compress_zip" : true
+    "compress_zip" : true,
+    "ftp" : {
+        "true" : true,
+        "ip" : "",
+        "user" : "",
+        "paswword" : "",
+        "path" : "",
+        "lifetime" : "-5" 
+    }
 }

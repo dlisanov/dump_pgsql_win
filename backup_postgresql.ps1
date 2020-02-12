@@ -54,3 +54,16 @@ Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Delete old file"
 $CurrentDay = Get-Date
 $ChDaysDel = $CurrentDay.AddDays($config.lifetime)
 Get-ChildItem -Path $config.path_backup -Recurse | Where-Object { $_.CreationTime -LT $ChDaysDel } | Remove-Item -Recurse -Force
+#Копируем на FTP
+if ($config.FTP.true) {
+    $list_files = [IO.Directory]::EnumerateFiles($config.path_backup, "$date*")
+    $ftp = New-Object System.Net.WebClient
+    $ftp.NetworkCredential = New-Object System.Net.NetworkCredential($config.FTP.user, $config.FTP.password)
+    foreach ($name_file in $list_files) {
+        $uri = "ftp://"+$config.FTP.ip+$config.FTP.path+$name_file   
+        $file = $config.path_backup+$name_file
+        Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Start copy file $name_file to FTP"
+        $ftp.UploadFile($uri, $file)
+        Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Finish copy file $name_file to FTP"
+    }
+}
