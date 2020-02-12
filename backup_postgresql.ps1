@@ -25,7 +25,6 @@ foreach ($name_bd in $name_bd_list) {
         .\pg_dump.exe -Fc -b -f $name_bd_file $name_bd
         # Проверяем необходимость сжатия дампа
         if ($config.compress_zip) {
-            $PSVersionTable.PSVersion.MajorRevision
             #Получаем имя сжатого дампа БД
             $zip_name_bd_file=$name_bd_file+".zip"
             # Сжимаем дамп
