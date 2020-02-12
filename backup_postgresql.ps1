@@ -1,5 +1,55 @@
 # Скрипт создания бэкапов PostgreSQl
 # минимальная версия PowerShell 5.1. С версией ниже встроенная архивация не работает
+function GetListFTP ($ip, $path, $user, $pass) {
+    $file_list = @()
+    $ftp = [System.Net.WebRequest]::Create($ip + $path)
+    $ftp.Credentials = new-object System.Net.NetworkCredential($user, $pass)
+    $ftp.UseBinary = $true
+    $ftp.UsePassive = $true
+    $ftp.Method = [System.Net.WebRequestMethods+Ftp]::ListDirectory
+    $FTPResponse = $ftp.GetResponse()
+    $ResponseStream = $FTPResponse.GetResponseStream()
+    $FTPReader = New-Object System.IO.Streamreader -ArgumentList $ResponseStream
+    while ($FTPReader.EndOfStream -ne $true) {
+        $file_list += $FTPReader.ReadLine()
+    }
+    $FTPReader.Close()
+    $ResponseStream.Close()
+    $Response.Close()
+    $ftp.Close()
+    $FTPReader.Dispose()
+    $ResponseStream.Dispose()
+    $Response.Dispose()
+    $ftp.Dispose()
+    return $file_list
+}
+function GetDateCreateFileFTP ($ip, $path, $user, $pass, $name) {
+    $ftp = [System.Net.FtpWebRequest]::Create($ip + $path + $name)
+    $ftp.Credentials = new-object System.Net.NetworkCredential($user, $pass)
+    $ftp.UseBinary = $true
+    $ftp.UsePassive = $true
+    $ftp.Method = [System.Net.WebRequestMethods+Ftp]::GetDateTimestamp
+    $FTPResponse = $ftp.GetResponse()
+    $date_create = $FTPResponse.LastModified   
+    $Response.Close()
+    $Response.Dispose()
+    $ftp.Close()
+    $ftp.Dispose()
+    return $date_create
+}
+function DeleteFileFTP ($ip, $path, $user, $pass, $name) {
+    $ftp = [System.Net.FtpWebRequest]::Create($ip + $path + $name)
+    $ftp = [System.Net.FtpWebRequest]$ftp
+    $ftp.Credentials = new-object System.Net.NetworkCredential($user, $pass)
+    $ftp.UseBinary = $true
+    $ftp.UsePassive = $true
+    $ftp.Method = [System.Net.WebRequestMethods+Ftp]::DeleteFile
+    $FTPResponse = $ftp.GetResponse()
+    $FTPResponse.Close()
+    $FTPResponse.Dispose() 
+    $ftp.Close()
+    $ftp.Dispose()   
+}
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Start script"
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Initilizacion variable"
 # Текущая дата
@@ -51,8 +101,7 @@ if ($config.compress_zip) {
 # Удаляем дампы страрше $lifetime_backup
 # Вычисляем дату после которой будем удалять файлы.
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Delete old file"
-$CurrentDay = Get-Date
-$ChDaysDel = $CurrentDay.AddDays($config.lifetime)
+$ChDaysDel = $date.AddDays($config.lifetime)
 Get-ChildItem -Path $config.path_backup -Recurse | Where-Object { $_.CreationTime -LT $ChDaysDel } | Remove-Item -Recurse -Force
 #Копируем на FTP
 if ($config.FTP.true) {
@@ -66,4 +115,17 @@ if ($config.FTP.true) {
         $ftp.UploadFile($uri, $file)
         Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Finish copy file $name_file to FTP"
     }
+    $ftp.Dispose()
+    # Удаляем старые файлы с FTP
+    # Получаем списко файлов на FTP
+    Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Get list file FTP"
+    $file_list_ftp = GetListFTP -ip $config.FTP.ip -patp $config.FTP.path -user $config.FTP.user -pass $config.FTP.password
+    foreach ($file_name_ftp in $file_list_ftp) {
+        $DateCreateFileFTP = GetDateCreateFileFTP -ip $config.FTP.ip -patp $config.FTP.path -user $config.FTP.user -pass $config.FTP.password -name $file_name_ftp
+        if ($DateCreateFileFTP -LT $data.AddDays($config.FTP.lifetime)){
+            Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Delete file $file_name_ftp in FTP "
+            DeleteFileFTP -ip $config.FTP.ip -patp $config.FTP.path -user $config.FTP.user -pass $config.FTP.password -name $file_name_ftp
+        }
+    }
+
 }
