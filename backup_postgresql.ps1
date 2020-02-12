@@ -19,7 +19,7 @@ Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Get list DB in $temp_bd_list"
 $name_bd_list = get-content $temp_bd_list
 # Удаляем временный файл
 Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Remove temp file list bd"
-Remove-Item $temp_bd_list -Recurse
+Remove-Item $temp_bd_list -Recurse -Force
 foreach ($name_bd in $name_bd_list) {
     # Проверяем имя БД с системными БД
     if (-not ($config.psql_srv.system_bd -match $name_bd)) {
@@ -45,7 +45,7 @@ if ($config.compress_zip) {
         Compress-Archive -Path $full_file_sql -DestinationPath $zip_name_bd_file -CompressionLevel Optimal
         # Удаляем не сжатый дамп
         Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Delete file $full_file_sql"
-        Remove-Item $full_file_sql -Recurse
+        Remove-Item $full_file_sql -Recurse -Force
     }
 }
 # Удаляем дампы страрше $lifetime_backup
