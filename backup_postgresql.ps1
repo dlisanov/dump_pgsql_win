@@ -80,7 +80,7 @@ if ($config.compress_zip) {
         Compress-Archive -Path $file_sql -DestinationPath $zip_name_bd_file -CompressionLevel Optimal
         # Удаляем исходный файл
         Write-Host $(Get-Date -format "yyyy-MM-dd HH:mm") "Delete file $full_file_sql"
-        Remove-Item $full_file_sql -Recurse -Force
+        Remove-Item $file_sql -Recurse -Force
     }
 }
 # Удалем старые бэкапы
