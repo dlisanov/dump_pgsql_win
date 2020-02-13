@@ -91,7 +91,7 @@ Get-ChildItem -Path $config.path_backup -Recurse | Where-Object { $_.CreationTim
 # Копируем на FTP при небходимости
 if ($config.FTP.true) {
     # Список файлов для копирования на FTP
-    $list_files = Get-ChildItem -Path d:\1c_backup\ | Where-Object { $_.Name -match "$date" }
+    $list_files = Get-ChildItem -Path $config.path_backup | Where-Object { $_.Name -match "$date" }
     # Иницилизируем переменную для работы с FTP
     $ftp = New-Object System.Net.WebClient
     $ftp.Credentials = New-Object System.Net.NetworkCredential($config.FTP.user, $config.FTP.password)
