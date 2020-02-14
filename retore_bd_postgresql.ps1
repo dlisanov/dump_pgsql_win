@@ -30,7 +30,7 @@ $env:PGHOST = $config.psql_srv.ip
 $env:PGPORT = $config.psql_srv.port
 $env:PGUSER = $config.psql_srv.user
 $env:PGPASSWORD = $config.psql_srv.password
-$type_repo = Read-Host "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (local/ftp) [local]"
+$type_repo = Read-Host "Enter type repositary backup (local/ftp) [local]"
 # Получаем список бэкапов
 $list_backup=@()
 switch ($type_repo) {
@@ -43,7 +43,7 @@ foreach ($name_bakup in $list_backup) {
     Write-Host "$i - $name_bakup"
     $i += 1
 }
-$num_backup = Read-Host "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ"
+$num_backup = Read-Host "Enter number backup"
 $num_backup = $num_backup - 1
 # Загружаем бэкап с FTP
 if ($type_repo -eq "ftp") {
@@ -60,10 +60,10 @@ if ($full_name_backup.Contains(".zip")){
     $full_name_backup = $full_name_backup.Substring(0, ($full_name_backup.Length)-4)
 }
 # Запрашиваем имя новой БД для создания и последующей загрузки
-$name_bd = Read-Host "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)"
+$name_bd = Read-Host "Enter name new database"
 # Переходим в каталог PostgreSQL
 Set-Location $config.psql_srv.path_bin
 # Создаем пустую БД
 .\createdb.exe -E "UTF8" -l "Russian_Russia.1251" $name_bd
 # Восстанавливаем БД в созданую базу
-.\pg_restore.exe -c -d $name_bd $full_name_backup 
+.\pg_restore.exe --dbname "$name_bd" --section=pre-data --section=data --section=post-data "$full_name_backup" 
