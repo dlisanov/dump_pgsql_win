@@ -1,5 +1,4 @@
-# Скрипт восстановления БД PostgreSQL
-# Загружаем конфиг
+# Скрипто восстановления БД PostgreSQL в новую чистую базу
 function GetListLocalBackup ($path) {
     $file_list = Get-ChildItem -Path $path
     return $file_list.Name    
@@ -21,32 +20,32 @@ function GetListFTPBackup ($ip, $path, $user, $pass) {
 }
 function DownloadFTPFile ($link, $user, $pass, $file) {
     $ftp = New-Object System.Net.WebClient
-    $ftp.Credentials = New-Object System.Net.NetworkCredential($config.FTP.user, $config.FTP.password)
+    $ftp.Credentials = New-Object System.Net.NetworkCredential($user, $pass)
     $uri = New-Object System.Uri($link)      
-    $ftp.UploadFile($uri, $file)    
+    $ftp.DownloadFile($uri, $file)    
 }
 $config = Get-Content $PSScriptRoot\config.json | ConvertFrom-Json
-# Иницилизируем переменные окружения для PostgreSQL
+# Иницилизируем переменные окружения PostgreSQL
 $env:PGHOST = $config.psql_srv.ip
 $env:PGPORT = $config.psql_srv.port
 $env:PGUSER = $config.psql_srv.user
 $env:PGPASSWORD = $config.psql_srv.password
-$type_repo = Read-Host "Поиск бэкапов (local/ftp) [local]"
-# Получаем списко бэкапов
+$type_repo = Read-Host "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ (local/ftp) [local]"
+# Получаем список бэкапов
 $list_backup=@()
 switch ($type_repo) {
     "ftp" { $list_backup = GetListFTPBackup -ip $config.FTP.ip -path $config.FTP.path -user $config.FTP.user -pass $config.FTP.password }
     Default { $list_backup = GetListLocalBackup -path $config.path_backup }
 }
-# Выводим и запрашиваем нужный бэкап
+# Выводи списко бэкапов с номерами
 $i = 1
 foreach ($name_bakup in $list_backup) {
     Write-Host "$i - $name_bakup"
     $i += 1
 }
-$num_backup = Read-Host "Введите номер бекапа"
+$num_backup = Read-Host "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ"
 $num_backup = $num_backup - 1
-# Получаем полное имя файл бэкапа, при небходимости скачиваем с FTP
+# Загружаем бэкап с FTP
 if ($type_repo -eq "ftp") {
     $full_name_backup = $config.path_backup + "FTP_" + $list_backup[$num_backup]
     $link = $config.FTP.ip + $config.FTP.path + $list_backup[$num_backup]
@@ -55,16 +54,16 @@ if ($type_repo -eq "ftp") {
 else {
     $full_name_backup = $config.path_backup + $list_backup[$num_backup]
 }
-# Распоковываем архив
+# Распаковываем архив
 if ($full_name_backup.Contains(".zip")){
     Expand-Archive -LiteralPath $full_name_backup -DestinationPath $config.path_backup
-    $full_name_backup = $full_name_backup.Substring(0, $full_name_backu.Length-4)
+    $full_name_backup = $full_name_backup.Substring(0, ($full_name_backup.Length)-4)
 }
-# Запрашиваем имя БД для восстановления
-$name_bd = Read-Host "Введите имя БД, для загрузки данных (БД будет создана)"
-# Переходим в каталог с исполняемыми файлами PostgreSQL
+# Запрашиваем имя новой БД для создания и последующей загрузки
+$name_bd = Read-Host "пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅ, пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ (пїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ)"
+# Переходим в каталог PostgreSQL
 Set-Location $config.psql_srv.path_bin
-# Создаем пустую бд
+# Создаем пустую БД
 .\createdb.exe -E "UTF8" -l "Russian_Russia.1251" $name_bd
-# Загружаем данные в БД
+# Восстанавливаем БД в созданую базу
 .\pg_restore.exe -c -d $name_bd $full_name_backup 
