@@ -1,22 +1,22 @@
 {
     "version" : "1",
     "psql_srv"  : {
-        "ip" : "192.168.0.20",
+        "ip" : "IP/HOSTNAME server PostgreSQL",
         "port" : "5432",
-        "user" : "postgres",
-        "password" : "Password1",
+        "user" : "User name PostgreSQL",
+        "password" : "Password PostgreSQL",
         "path_bin" : "d:\\progremmers\\PosqtgreSQL\\App\\PgSQL\\bin\\",
         "system_bd" : ["postgres", "template1", "template0"]
     },
-    "path_backup" : "D:\\1c_backup\\",
+    "path_backup" : "Directory backups. Example - D:\\backup\\",
     "lifetime" : "-5",
     "compress_zip" : true,
     "ftp" : {
         "true" : true,
-        "ip" : "ftp://192.168.3.10",
-        "user" : "admin",
-        "password" : "1qaz@WSX3edc$RFV",
-        "path" : "/adm_1c/pgsql/",
+        "ip" : "IP/HOSTNAME server FTP. Example - ftp://serverftp",
+        "user" : "User name FTP",
+        "password" : "User password FTP",
+        "path" : "Directory backups FTP. Example - /backup/",
         "lifetime" : "-5" 
     }
 }
